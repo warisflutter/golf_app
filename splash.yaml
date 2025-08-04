@@ -1,0 +1,11 @@
+flutter_native_splash:
+  image: "assets/golf_logo.png"
+  color: "#FFFFFF"
+  android_12:
+    image: "assets/golf_android12_logo.png"
+    color: "#FFFFFF"
+    color_dark: "#272727"
+
+  android: true
+  ios: true
+  web: false

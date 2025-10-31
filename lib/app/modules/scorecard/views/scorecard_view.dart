@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/scorecard_controller.dart';
@@ -91,25 +93,143 @@ class ScorecardView extends GetView<ScorecardController> {
 
               ],
             ),
-            body: Obx(
-              () => SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: Get.size.width),
-                    child: DataTable(
-                      columnSpacing: 15,
-                      key: Key('Key ${controller.currentTabIndex.value}${controller.count.value}'),
-                      columns: controller.buildColumns(isLandscape: isLandscape),
-                      rows: controller.buildRows(isLandscape: isLandscape),
+            body: Stack(
+              children: [
+                // 👇 Ye aapka existing scorecard table hai
+                Obx(
+                      () => SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minWidth: Get.size.width),
+                        child: DataTable(
+                          columnSpacing: 15,
+                          key: Key(
+                            'Key ${controller.currentTabIndex.value}${controller.count.value}',
+                          ),
+                          columns: controller.buildColumns(isLandscape: isLandscape),
+                          rows: controller.buildRows(isLandscape: isLandscape),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+
+                // --- Multiple Press Matches Sidebar ---
+                Obx(() {
+                  final matches = controller.pressMatches;
+
+                  if (matches.isEmpty) return const SizedBox.shrink();
+
+                  return Positioned(
+                    right: controller.dragX.value,
+                    top: controller.dragY.value,
+                    child: GestureDetector(
+                      onPanUpdate: (details) {
+                        double newX = controller.dragX.value - details.delta.dx;
+                        double newY = controller.dragY.value + details.delta.dy;
+
+                        final screenWidth = MediaQuery.of(context).size.width;
+                        final screenHeight = MediaQuery.of(context).size.height;
+
+                        const boxWidth = 128.0;
+                        const boxHeight = 220.0;
+
+                        if (newX < 0) newX = 0;
+                        if (newX > screenWidth - boxWidth) newX = screenWidth - boxWidth;
+
+                        if (newY < 0) newY = 0;
+                        if (newY > screenHeight - boxHeight) newY = screenHeight - boxHeight;
+
+                        controller.dragX.value = newX;
+                        controller.dragY.value = newY;
+                      },
+                      child: Container(
+                        width: 128,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                        ),
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            dividerColor: Colors.transparent,
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                          ),
+                          child: ExpansionTile(
+                            title: const Text(
+                              "Press Matches",
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            children: [
+                              SizedBox(
+                                height: 200,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      for (int i = 0; i < matches.length; i++)
+                                        GestureDetector(
+                                          onTap: () {
+                                            controller.showPressDialog(
+                                              matches[i].player,
+                                              matches[i].holeIndex,
+                                            );
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 6, horizontal: 10),
+                                            child: _buildPressButton("Press ${i + 1}"),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPressButton(String text) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // 👈 blur effect
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2), // 👈 semi transparent
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black, // 👈 text black
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -87,26 +87,5 @@ class PlayerTiler extends StatelessWidget {
         ],
       ),
     );
-
-    //   ListTile(
-    //   leading: Icon(Icons.golf_course_sharp),
-    //   title: Text(title),
-    //   subtitle: Obx(() =>  Text(playerName.value)),
-    //   trailing: SizedBox(
-    //     width: 100,
-    //     child: Row(
-    //       children: [
-    //         IconButton(onPressed: () async{
-    //           var newName = await DialogHelper.showEditPlayerDialog(playerName.value);
-    //           if(newName != null && newName.isNotEmpty){
-    //             playerName.value = newName;
-    //           }
-    //         }, icon: const Icon(Icons.edit)),
-    //         IconButton(onPressed: onDelete, icon: Icon(Icons.delete)),
-    //       ],
-    //     ),
-    //   ),
-    //   contentPadding: EdgeInsets.zero,
-    // );
   }
 }
